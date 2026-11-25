@@ -1,0 +1,68 @@
+name: Gerar APK do Karlu
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Instalar dependências
+        run: npm install --legacy-peer-deps
+
+      - name: Montar o app (www)
+        run: npm run build:web
+
+      - name: Criar projeto Android
+        run: npx cap add android
+
+      - name: Chave fixa de assinatura (necessária para o login do Google)
+        run: |
+          mkdir -p ~/.android
+          cp signing/debug.keystore ~/.android/debug.keystore
+          echo "SHA-1 desta chave (cole no Firebase):"
+          keytool -list -v -keystore ~/.android/debug.keystore -storepass android -alias androiddebugkey | grep -E "SHA1|SHA256"
+
+      - name: Firebase (google-services.json)
+        run: |
+          if [ -f firebase/google-services.json ]; then
+            cp firebase/google-services.json android/app/google-services.json
+            echo "google-services.json copiado."
+          else
+            echo "::warning::firebase/google-services.json não encontrado. Usando arquivo de mentira: o login NÃO vai funcionar (só modo teste)."
+            cat > android/app/google-services.json <<'JSON'
+          {"project_info":{"project_number":"000000000000","project_id":"karlu-placeholder","storage_bucket":"karlu-placeholder.appspot.com"},"client":[{"client_info":{"mobilesdk_app_id":"1:000000000000:android:0000000000000000000000","android_client_info":{"package_name":"shop.starlyninfinite.karlu"}},"oauth_client":[],"api_key":[{"current_key":"PLACEHOLDER"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}
+          JSON
+          fi
+
+      - name: Sincronizar e ajustar permissões, tema e ícones
+        run: |
+          npx cap sync android
+          node scripts/patch-android.mjs
+
+      - name: Compilar o APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Renomear
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk Karlu.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Karlu-APK
+          path: Karlu.apk
