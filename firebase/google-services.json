@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "682328739849",
+    "firebase_url": "https://karlu-15b1d-default-rtdb.firebaseio.com",
     "project_id": "karlu-15b1d",
     "storage_bucket": "karlu-15b1d.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "shop.starlyninfinite.karlu"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "682328739849-9mmt5517612764if3vgv48t1p0r8lc73.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "shop.starlyninfinite.karlu",
+            "certificate_hash": "72935cdcfe69ca5c764e70bf593f1e3c07ccd000"
+          }
+        },
+        {
+          "client_id": "682328739849-quqk6hck7knsm01g65posbdiaq41qtbm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBh-p6cu0yJnE5cjZxmhpkmuuF7BH-T3wQ"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "682328739849-quqk6hck7knsm01g65posbdiaq41qtbm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
