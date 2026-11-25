@@ -57,6 +57,14 @@ if (existsSync(STY)) {
   }
 }
 
+/* ---- minSdk 24 (o Firebase Auth exige Android 7.0 ou mais novo) ---- */
+const VARS = 'android/variables.gradle';
+if (existsSync(VARS)) {
+  let v = rd(VARS);
+  v = v.replace(/minSdkVersion\s*=\s*\d+/, 'minSdkVersion = 24');
+  writeFileSync(VARS, v);
+}
+
 /* ---- Firebase / Google Services no Gradle ---- */
 const GMS_VERSION = '4.6.0';
 const BOM_VERSION = '35.2.0';
