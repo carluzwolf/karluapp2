@@ -57,30 +57,40 @@ if (existsSync(STY)) {
   }
 }
 
-/* ---- Firebase / Google Services no Gradle (se o template não trouxe) ---- */
+/* ---- Firebase / Google Services no Gradle ---- */
+const GMS_VERSION = '4.6.0';
+const BOM_VERSION = '35.2.0';
+
+// 1) android/build.gradle: plugin do Google Services (equivale a: id("com.google.gms.google-services") version "4.6.0" apply false)
 const ROOT = 'android/build.gradle';
 if (existsSync(ROOT)) {
   let r = rd(ROOT);
-  if (!r.includes('com.google.gms:google-services')) {
-    r = r.replace(/dependencies\s*\{/, (x) => x + "\n        classpath 'com.google.gms:google-services:4.4.2'");
-    writeFileSync(ROOT, r);
+  if (r.includes('com.google.gms:google-services')) {
+    r = r.replace(/com\.google\.gms:google-services:[\w.\-]+/, `com.google.gms:google-services:${GMS_VERSION}`);
+  } else {
+    r = r.replace(/dependencies\s*\{/, (x) => x + `\n        classpath 'com.google.gms:google-services:${GMS_VERSION}'`);
   }
+  writeFileSync(ROOT, r);
 }
+
+// 2) android/app/build.gradle: Firebase BoM + aplicar o plugin
 const APPG = 'android/app/build.gradle';
 if (existsSync(APPG)) {
   let g = rd(APPG);
+
+  // BoM (implementation(platform("com.google.firebase:firebase-bom:35.2.0")))
+  if (g.includes('com.google.firebase:firebase-bom')) {
+    g = g.replace(/com\.google\.firebase:firebase-bom:[\w.\-]+/, `com.google.firebase:firebase-bom:${BOM_VERSION}`);
+  } else {
+    g = g.replace(/dependencies\s*\{/, (x) => x + `\n    implementation platform('com.google.firebase:firebase-bom:${BOM_VERSION}')`);
+  }
+
+  // Plugin do Google Services (id("com.google.gms.google-services"))
   if (!g.includes('com.google.gms.google-services')) {
     g += `
-try {
-    def servicesJSON = file('google-services.json')
-    if (servicesJSON.text) {
-        apply plugin: 'com.google.gms.google-services'
-    }
-} catch(Exception e) {
-    logger.info("google-services.json nao encontrado")
-}
+apply plugin: 'com.google.gms.google-services'
 `;
-    writeFileSync(APPG, g);
   }
+  writeFileSync(APPG, g);
 }
 console.log('Android ajustado');
